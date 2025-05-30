@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.title}}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .loading {
+            display: none;
+        }
+        .loading.show {
+            display: inline-block;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white py-6">
+        <div class="container mx-auto px-4">
+            <h1 class="text-4xl font-bold text-center">
+                <i class="fas fa-boxes mr-3"></i>
+                Order Packs Calculator
+            </h1>
+            <p class="text-center mt-2 text-blue-100">
+                Calculate the optimal pack combination for your orders
+            </p>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <!-- Pack Sizes Configuration -->
+            <div class="bg-white rounded-lg card-shadow p-6 mb-8">
+                <h2 class="text-2xl font-semibold mb-4 text-gray-800">
+                    <i class="fas fa-cog mr-2 text-blue-600"></i>
+                    Pack Sizes Configuration
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Current Pack Sizes
+                        </label>
+                        <div id="currentPackSizes" class="flex flex-wrap gap-2 mb-4">
+                            <!-- Pack sizes will be loaded here -->
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="newPackSizes" class="block text-sm font-medium text-gray-700 mb-2">
+                            Update Pack Sizes (comma-separated)
+                        </label>
+                        <div class="flex gap-2">
+                            <input type="text" id="newPackSizes" 
+                                   class="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   placeholder="e.g., 250, 500, 1000, 2000, 5000">
+                            <button onclick="updatePackSizes()" 
+                                    class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-200">
+                                <i class="fas fa-save mr-1"></i>
+                                Update
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calculate Packs -->
+            <div class="bg-white rounded-lg card-shadow p-6 mb-8">
+                <h2 class="text-2xl font-semibold mb-4 text-gray-800">
+                    <i class="fas fa-calculator mr-2 text-green-600"></i>
+                    Calculate Packs for Order
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="itemsInput" class="block text-sm font-medium text-gray-700 mb-2">
+                            Number of Items
+                        </label>
+                        <input type="number" id="itemsInput" min="1" 
+                               class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                               placeholder="Enter number of items">
+                    </div>
+                    
+                    <div>
+                        <label for="customPackSizes" class="block text-sm font-medium text-gray-700 mb-2">
+                            Custom Pack Sizes (optional)
+                        </label>
+                        <input type="text" id="customPackSizes" 
+                               class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                               placeholder="e.g., 23, 31, 53">
+                    </div>
+                </div>
+                
+                <div class="mt-6">
+                    <button onclick="calculatePacks()" 
+                            class="bg-green-600 text-white px-6 py-3 rounded-md hover:bg-green-700 transition duration-200 text-lg font-medium">
+                        <i class="fas fa-play mr-2"></i>
+                        Calculate
+                        <span class="loading ml-2">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div id="resultsSection" class="bg-white rounded-lg card-shadow p-6 hidden">
+                <h2 class="text-2xl font-semibold mb-4 text-gray-800">
+                    <i class="fas fa-chart-bar mr-2 text-purple-600"></i>
+                    Calculation Results
+                </h2>
+                
+                <div id="resultsContent">
+                    <!-- Results will be displayed here -->
+                </div>
+            </div>
+
+            <!-- Examples -->
+            <div class="bg-white rounded-lg card-shadow p-6 mt-8">
+                <h2 class="text-2xl font-semibold mb-4 text-gray-800">
+                    <i class="fas fa-lightbulb mr-2 text-yellow-600"></i>
+                    Examples
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <button onclick="loadExample(1)" class="text-left p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition duration-200">
+                        <div class="font-medium text-blue-600">1 item</div>
+                        <div class="text-sm text-gray-600">Expected: 1 × 250</div>
+                    </button>
+                    
+                    <button onclick="loadExample(251)" class="text-left p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition duration-200">
+                        <div class="font-medium text-blue-600">251 items</div>
+                        <div class="text-sm text-gray-600">Expected: 1 × 500</div>
+                    </button>
+                    
+                    <button onclick="loadExample(501)" class="text-left p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition duration-200">
+                        <div class="font-medium text-blue-600">501 items</div>
+                        <div class="text-sm text-gray-600">Expected: 1 × 500 + 1 × 250</div>
+                    </button>
+                    
+                    <button onclick="loadExample(12001)" class="text-left p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition duration-200">
+                        <div class="font-medium text-blue-600">12,001 items</div>
+                        <div class="text-sm text-gray-600">Expected: 2 × 5000 + 1 × 2000 + 1 × 250</div>
+                    </button>
+                    
+                    <button onclick="loadEdgeCase()" class="text-left p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition duration-200">
+                        <div class="font-medium text-red-600">Edge Case</div>
+                        <div class="text-sm text-gray-600">500,000 items with sizes 23, 31, 53</div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; 2024 Pack Calculator. Built with Go, Gin, and modern web technologies.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Load current pack sizes on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCurrentPackSizes();
+        });
+
+        async function loadCurrentPackSizes() {
+            try {
+                const response = await fetch('/api/pack-sizes');
+                const data = await response.json();
+                
+                const container = document.getElementById('currentPackSizes');
+                container.innerHTML = data.pack_sizes.map(size => 
+                    `<span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">${size}</span>`
+                ).join('');
+            } catch (error) {
+                console.error('Error loading pack sizes:', error);
+            }
+        }
+
+        async function updatePackSizes() {
+            const input = document.getElementById('newPackSizes');
+            const packSizesStr = input.value.trim();
+            
+            if (!packSizesStr) {
+                alert('Please enter pack sizes');
+                return;
+            }
+            
+            try {
+                const packSizes = packSizesStr.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n > 0);
+                
+                if (packSizes.length === 0) {
+                    alert('Please enter valid pack sizes');
+                    return;
+                }
+                
+                const response = await fetch('/api/pack-sizes', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        pack_sizes: packSizes
+                    })
+                });
+                
+                if (response.ok) {
+                    input.value = '';
+                    loadCurrentPackSizes();
+                    showNotification('Pack sizes updated successfully!', 'success');
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + error.message);
+                }
+            } catch (error) {
+                console.error('Error updating pack sizes:', error);
+                alert('Error updating pack sizes');
+            }
+        }
+
+        async function calculatePacks() {
+            const itemsInput = document.getElementById('itemsInput');
+            const customPackSizesInput = document.getElementById('customPackSizes');
+            const loadingSpinner = document.querySelector('.loading');
+            
+            const items = parseInt(itemsInput.value);
+            if (!items || items <= 0) {
+                alert('Please enter a valid number of items');
+                return;
+            }
+            
+            loadingSpinner.classList.add('show');
+            
+            try {
+                const requestBody = { items: items };
+                
+                // Add custom pack sizes if provided
+                const customPackSizesStr = customPackSizesInput.value.trim();
+                if (customPackSizesStr) {
+                    const customPackSizes = customPackSizesStr.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n > 0);
+                    if (customPackSizes.length > 0) {
+                        requestBody.pack_sizes = customPackSizes;
+                    }
+                }
+                
+                const response = await fetch('/api/calculate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    displayResults(result);
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + error.message);
+                }
+            } catch (error) {
+                console.error('Error calculating packs:', error);
+                alert('Error calculating packs');
+            } finally {
+                loadingSpinner.classList.remove('show');
+            }
+        }
+
+        function displayResults(result) {
+            const resultsSection = document.getElementById('resultsSection');
+            const resultsContent = document.getElementById('resultsContent');
+            
+            const packBreakdownHtml = Object.entries(result.pack_breakdown)
+                .sort(([a], [b]) => parseInt(b) - parseInt(a))
+                .map(([size, count]) => 
+                    `<div class="flex justify-between items-center py-2 border-b border-gray-100">
+                        <span class="font-medium">${count} × ${size} items</span>
+                        <span class="text-gray-600">${count * parseInt(size)} total items</span>
+                    </div>`
+                ).join('');
+            
+            resultsContent.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div class="bg-blue-50 p-4 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-blue-600">${result.requested_items.toLocaleString()}</div>
+                        <div class="text-sm text-blue-800">Requested Items</div>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-green-600">${result.total_items.toLocaleString()}</div>
+                        <div class="text-sm text-green-800">Total Items Shipped</div>
+                    </div>
+                    <div class="bg-purple-50 p-4 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-purple-600">${result.total_packs}</div>
+                        <div class="text-sm text-purple-800">Total Packs</div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="font-semibold text-gray-800 mb-3">Pack Breakdown:</h3>
+                    ${packBreakdownHtml}
+                </div>
+                
+                <div class="mt-4 p-3 bg-yellow-50 border-l-4 border-yellow-400">
+                    <p class="text-sm text-yellow-800">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Extra items: ${(result.total_items - result.requested_items).toLocaleString()} 
+                        (${(((result.total_items - result.requested_items) / result.requested_items) * 100).toFixed(2)}% overhead)
+                    </p>
+                </div>
+            `;
+            
+            resultsSection.classList.remove('hidden');
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function loadExample(items) {
+            document.getElementById('itemsInput').value = items;
+            document.getElementById('customPackSizes').value = '';
+        }
+
+        function loadEdgeCase() {
+            document.getElementById('itemsInput').value = 500000;
+            document.getElementById('customPackSizes').value = '23, 31, 53';
+        }
+
+        function showNotification(message, type) {
+            // Simple notification - could be enhanced with a proper notification library
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-lg text-white z-50 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Allow Enter key to trigger calculation
+        document.getElementById('itemsInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                calculatePacks();
+            }
+        });
+    </script>
+</body>
+</html> 
